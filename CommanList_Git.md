@@ -353,3 +353,66 @@ git branch -m old-branch-name new-branch-name
 git branch -m featureresolve-reviewer-decisions feature/resolve-reviewer-decisions
 
 ```
+
+## New Repo and Local Files
+
+```bash
+  🐉 > git init
+
+  hint: Using 'master' as the name for the initial branch. This default branch name
+  hint: is subject to change. To configure the initial branch name to use in all
+  hint: of your new repositories, which will suppress this warning, call:
+
+  hint:
+  hint:   git config --global init.defaultBranch <name>
+
+  hint:
+  hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+
+  hint: 'development'. The just-created branch can be renamed via this command:
+  hint:
+
+  hint:   git branch -m <name>
+
+  # Initialized empty Git repository in /mnt/d/01 Apps/Development/Logs/CommandLists/.git/
+
+  # Changed branch name to 'main' instead of "master"
+  $ git branch -m main
+
+  # Added the remote repo SSH to link it with the local files
+  $ git remote add origin git@github.com:M-Bukhari/commands-list.git
+
+  # Stage your files
+  git add .     | #My shortcut
+  gaa     # with my Bash Profile
+
+  # Commit your files
+  git commit -m "Initial commit"
+  gcm "Initial commit"    # with my Bash Profile
+
+  # Push your branch to GitHub
+  git push -u origin main
+
+
+  # Pull command with merge strategy
+  git pull origin main --no-rebase --allow-unrelated-histories
+
+  # Why this works
+  --no-rebase: This explicitly tells Git to use the merge strategy. This satisfies the error Need to specify how to reconcile divergent branches (by choosing the merge option from the hint).
+
+  --allow-unrelated-histories: This is still needed to combine the two different "Initial commits."
+```
+
+Merge Commit: Running this command will likely open a text editor (like Vim or Nano) asking you to confirm a "merge commit message."
+
+The default message is usually fine.
+
+To save and exit:
+If it's Vim (looks complex): Type :wq and press Enter.
+If it's Nano (bottom menu): Press Ctrl+X, then Y, then Enter.
+
+The Final Push: After the pull is successful and your local files are merged, you can finally push your code to GitHub.
+
+```bash
+  git push -u origin main
+```
