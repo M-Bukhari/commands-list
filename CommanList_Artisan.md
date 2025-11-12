@@ -202,5 +202,61 @@ All investor files are now stored privately and require authentication to access
 Queries
 
 ```php
+    cd /mnt/d/01\ Apps/Development/Web/abam-invest-hub && php artisan make:controller Admin/ActivityLogController --resource
+```
 
+### Create a tinker script to add test users
+
+```bash
+    php artisan tinker
+
+    # Then paste this code in the tinker console:
+    // Create 50 test users
+    for ($i = 1; $i <= 50; $i++) {
+        \App\Models\User::create([
+            'name' => 'Test User ' . $i,
+            'email' => 'testuser' . $i . '@example.com',
+            'password' => bcrypt('password'),
+            'role' => $i <= 5 ? 'admin' : ($i <= 15 ? 'reviewer' : 'user'),
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    echo "Created 50 test users!\n";
+    exit
+
+```
+
+### OR if you prefer a faster seeder approach, run these commands:
+
+```bash
+    # Create a seeder file
+    cat > database/seeders/TestUsersSeeder.php << 'EOF'
+    <?php
+
+    namespace Database\Seeders;
+
+    use Illuminate\Database\Seeder;
+    use App\Models\User;
+    use Illuminate\Support\Facades\Hash;
+
+    class TestUsersSeeder extends Seeder
+    {
+        public function run()
+        {
+            for ($i = 1; $i <= 50; $i++) {
+                User::create([
+                    'name' => 'Test User ' . $i,
+                    'email' => 'testuser' . $i . '@example.com',
+                    'password' => Hash::make('password'),
+                    'role' => $i <= 5 ? 'admin' : ($i <= 15 ? 'reviewer' : 'user'),
+                    'email_verified_at' => now(),
+                ]);
+            }
+        }
+    }
+    EOF
+
+    # Run the seeder
+    php artisan db:seed --class=TestUsersSeeder
 ```

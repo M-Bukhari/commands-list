@@ -255,6 +255,8 @@ For a UAT server, I'd recommend the git reset --hard approach since UAT should m
 
 # GitHub Commands Cheat Sheet @
 
+## General Commands
+
 Setup & Config
 
 ```bash
@@ -416,3 +418,125 @@ The Final Push: After the pull is successful and your local files are merged, yo
 ```bash
   git push -u origin main
 ```
+
+### How to get to a previous point even if you have committed to the remote repo
+
+Before we reset, let's create another backup branch pointing to your current HEAD (bc42382, the remote state) to preserve it, just in case you need to switch back later or to be extra cautious, let's create a backup branch specifically pointing to origin/main (bc42382) in case you need to reference or revert to the remote's state later. This won't change your current HEAD:
+
+```bash
+  git branch backup-origin-main
+
+  git branch backup-origin-main origin/main
+```
+
+Once done, confirm by running:
+
+```bash
+  git branch -v
+```
+
+Run this command to switch back to main:
+
+```bash
+  git checkout main
+
+  # After that, verify you're on main with:
+  git branch -v
+
+  # We'll reset it to the desired commit (b821feb). This will discard all changes and history after that commit on main
+  git reset --hard b821feb
+
+  # verify the reset worked by running:
+  git log --oneline --graph --decorate -n 5
+
+  # Output Result :
+  # This will output the parent commit hash of bc42382 (it should be a single hash like b821feb if that's the case, or possibly more if it was a merge commit).
+   $ git show --pretty=format:%P bc42382
+
+    b821feb855385aafa3939db5e21dfe12fd3bc06f
+    diff --git a/.env.example b/.env.example
+    index c402466..f304d72 100644
+    --- a/.env.example
+    +++ b/.env.example
+    @@ -96,3 +96,21 @@ ACTIVITY_LOG_QUEUE_NAME=default
+    ACTIVITY_LOG_ALERTS_ENABLED=true
+    ACTIVITY_LOG_ALERT_EMAIL=m.bukhari@abam.sa
+    ACTIVITY_LOG_FAILED_LOGIN_THRESHOLD=5
+    +
+    +# Draft Management Configuration
+    +DRAFTS_ENABLED=false
+    +AUTO_SAVE_ENABLED=false
+    +AUTO_SAVE_INTERVAL=60000
+    +DRAFT_EXPIRY_DAYS=7
+    +DRAFT_AUTO_CLEANUP=true
+    +DRAFT_CLEANUP_THRESHOLD=30
+    +DRAFT_ALLOW_RESUMPTION=false
+    +DRAFT_SHOW_PROMPTS=false
+
+```
+
+Now that we've confirmed b821feb is indeed the parent (previous commit) of the remote's latest (bc42382), your local main is at the desired state. If you want to update the remote repository to match this (effectively removing the "New draft mgmt system implemented" commit from history, as shown in the diff), you can force-push your local main to origin/main. This rewrites remote history but is safe since you're the only developer—no one else will be affected.
+
+```bash
+  # Use --force-with-lease instead of plain --force for safety: it will fail if the remote has unexpected new commits (e.g., from another device).
+  # Run the following command:
+
+  git push origin main --force-with-lease
+
+
+  # If it succeeds, verify the remote is updated by running:
+  git fetch origin
+  git log --oneline --graph --decorate -n 5 origin/main
+
+```
+
+### Get a file from another branch
+
+There are several ways to get a file from another branch in Git:
+
+#### Method 1: Checkout a Single File (Without Switching Branches)
+
+```bash
+  git checkout <branch-name> -- <file-path>
+
+  #  Example:
+  git checkout feature/new-design -- app/Models/User.php
+  # This will bring the file from the specified branch into your current working directory (and stage it).
+```
+
+#### Method 2: View File Content Without Checking Out
+
+If you just want to view or copy the content without modifying your working directory:
+
+```bash
+  git show <branch-name>:<file-path>
+
+  # Example:
+  git show feature/new-design:app/Models/User.php
+
+  # You can redirect this to a new file:
+  git show feature/new-design:app/Models/User.php > User_from_feature.php
+
+```
+
+#### Method 3: List Files in Another Branch
+
+To see what files exist in another branch:
+git ls-tree -r --name-only <branch-name>
+Or to search for a specific file:
+git ls-tree -r --name-only <branch-name> | grep "filename"
+
+#### Method 4: Compare Files Between Branches
+
+To see the differences between a file in your current branch and another branch:
+git diff <branch-name> -- <file-path>
+Example:
+git diff feature/new-design -- app/Models/User.php
+
+#### Method 5: Merge Just One File
+
+If you want to merge changes from a specific file in another branch:
+git checkout <branch-name> -- <file-path>
+git add <file-path>
+git commit -m "Merged <file-path> from <branch-name>"
+Which method would you like to use? If you tell me which branch and which file you need, I can help you get it.
